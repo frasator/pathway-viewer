@@ -29,7 +29,10 @@
     "pako": "~0.2.8",
     "network-viewer": "https://github.com/babelomics/network-viewer.git#develop",
     "stevia-elements": "https://github.com/babelomics/stevia-elements.git#develop",
-    "iron-list": "^1.2.8"
+    "iron-list": "^1.2.8",
+    "bower": "*",
+    "install": "^1.0.4",
+    "normalize-css": "^4.2.0"
   },
   "private": true,
   "devDependencies": {}

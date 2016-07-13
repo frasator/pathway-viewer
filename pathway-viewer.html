@@ -1,0 +1,357 @@
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="../network-viewer/network-viewer.html">
+
+<link rel="import" href="../iron-list/iron-list.html">
+
+
+<dom-module id="pathway-viewer">
+    <style is="custom-style" include="iron-flex iron-flex-reverse iron-flex-alignment iron-flex-factors iron-positioning">
+        :host {
+            box-sizing: border-box;
+            position: relative;
+            font-size: 13px;
+            font-family: 'Lato', 'Helvetica Neue', Helvetica, Arial, 'sans-serif' !important;
+            height: 100%;
+            width: 100%;
+            background-color: var(--light-secondary-color);
+            @apply(--layout-horizontal);
+        }
+
+        #categories,
+        #circuits {
+            @apply(--layout-flex);
+            overflow-y: auto;
+        }
+
+        #left {
+            box-sizing: border-box;
+            width: calc(100% - 300px);
+            height: 100%;
+            padding: 10px;
+        }
+
+        #left-label {
+            @apply(--layout-horizontal);
+        }
+
+        #right {
+            box-sizing: border-box;
+            width: 300px;
+            height: 100%;
+            padding: 10px 10px 10px 0;
+            @apply(--layout-vertical);
+        }
+
+        network-viewer {
+            box-sizing: border-box;
+            height: calc(100% - 25px);
+        }
+
+        network-viewer,
+        .box,
+        :host::content .right-box {
+            border: 1px solid var(--divider-color);
+            box-shadow: 0 0 2px rgba(0, 0, 0, 0.2);
+            background-color: var(--text-primary-color);
+        }
+
+        .label:not(:first-child),
+        :host::content.right-label:not(:first-child) {
+            padding-top: 10px;
+        }
+
+        :host::content.right-label,
+        .label {
+            color: var(--secondary-text-color);
+            height: 25px;
+            line-height: 25px;
+            padding-left: 5px;
+        }
+
+        :host::content.left-label {
+            line-height: 25px;
+        }
+        /* List items */
+
+        .listbox > div {
+            cursor: pointer;
+            padding: 1px 4px;
+            border: 1px solid transparent;
+            color: #555;
+        }
+
+        .listbox > div:hover {
+            background-color: var(--hover-color);
+            border-color: var(--accent-color);
+        }
+
+        .listbox > div[data-checked] {
+            background-color: var(--accent-color);
+        }
+
+        .listbox > div > span[data-haschanged] {
+            margin-right: 3px;
+            color: #000;
+            font-weight: bold;
+        }
+
+        .listbox > div > span[data-down][data-haschanged]:before,
+        .listbox > div > span[data-up][data-haschanged]:before {
+            margin-right: 3px;
+            color: #aaa;
+        }
+
+        .listbox > div > span[data-up][data-haschanged]:before {
+            font-family: 'FontAwesome';
+            content: '\f176';
+        }
+
+        .listbox > div > span[data-down][data-haschanged]:before {
+            font-family: 'FontAwesome';
+            content: '\f175';
+        }
+
+        .listbox > div > span[data-upsig][data-haschanged]:before {
+            color: #cc0000;
+        }
+
+        .listbox > div > span[data-downsig][data-haschanged]:before {
+            color: #005aa3;
+        }
+
+        .button {
+            background-color: var(--dark-button-color) !important;
+            color: var(--text-primary-color) !important;
+        }
+
+        .button:hover {
+            background-color: var(--light-button-color) !important;
+        }
+    </style>
+    <template>
+        <div id="left">
+            <div id="left-label">
+                <div class="label">Viewer:</div>
+                <div class="flex"></div>
+                <content select=".left-label"></content>
+            </div>
+            <!-- <network-viewer></network-viewer> -->
+            <!-- <network-viewer lite></network-viewer> -->
+            <network-viewer id="networkViewer" hide-node-render hide-edge-render></network-viewer>
+            <!-- <network-viewer lite hide-node-render hide-edge-render></network-viewer> -->
+            <!-- <network-viewer hide-bar hide-tool-bar hide-edition-bar hide-status-bar hide-node-render hide-edge-render></network-viewer> -->
+        </div>
+        <div id="right">
+            <div class="label horizontal layout">
+                <div> list:</div>
+                <div class="flex"></div>
+                <span style="color:#000">{{countChanged(categories)}}</span>
+                <span style="color:#666">&nbsp;altered</span>
+            </div>
+            <div class="horizontal layout">
+                <input class="stv" type="text" placeholder="Filter..." value="{{categorySearchString::input}}">
+                <div class="stv-btn button" style="border-right-width:0;border-left-width:0;" on-click="handleSignificanceSort"><i class="fa fa-sort-amount-asc"></i></div>
+                <div class="stv-btn button" on-click="handleAlphaSort"><i class="fa fa-sort-alpha-asc"></i></div>
+            </div>
+            <div id="categories" class="box listbox">
+                <template is="dom-repeat" items="{{categories}}" filter="{{computeCategoryFilter(categorySearchString)}}" sort="{{checkCategorySort(categorySortType, categorySortOrder)}}">
+                    <div on-click="handleCategoryClick" data-checked$="{{isSelected(item, selectedCategory)}}">
+                        <span data-up$="{{item.up}}" data-upsig$="{{item.upsig}}" data-haschanged$="{{item.haschanged}}"></span>
+                        <span data-down$="{{item.down}}" data-downsig$="{{item.downsig}}" data-haschanged$="{{item.haschanged}}"></span>
+                        <span data-haschanged$="{{item.haschanged}}">{{item.name}}</span>
+                    </div>
+                </template>
+            </div>
+
+
+            <div class="label horizontal layout">
+                <label class="stv">Circuit list:</label>
+                <div class="flex"></div>
+                <span style="color:#000">{{countChanged(circuits)}}</span>
+                <span style="color:#666">&nbsp;altered</span>
+            </div>
+            <div id="circuits" class="box listbox">
+                <template is="dom-repeat" items="{{circuits}}">
+                    <div on-click="handleCircuitClick" data-checked$="{{isSelected(item, selectedCircuit)}}">
+                        <span data-up$="{{item.up}}" data-upsig$="{{item.upsig}}" data-haschanged$="{{item.haschanged}}"></span>
+                        <span data-down$="{{item.down}}" data-downsig$="{{item.downsig}}" data-haschanged$="{{item.haschanged}}"></span>
+                        <span data-haschanged$="{{item.haschanged}}">{{item.shortname}}</span>
+                    </div>
+                </template>
+            </div>
+
+            <content select=".right-label"></content>
+            <content select=".right-box"></content>
+        </div>
+    </template>
+</dom-module>
+<script>
+    Polymer({
+        is: 'pathway-viewer',
+        properties: {
+            categories: {
+                type: Array
+            },
+            circuits: {
+                type: Array
+            },
+            selectedCategory: {
+                type: Object
+            },
+            selectedCircuit: {
+                type: Object
+            }
+        },
+        ready: function() {
+            var me = this;
+            this.networkViewer = this.$.networkViewer;
+            this.set('categories', []);
+            this.set('circuits', []);
+
+            this.set('categorySortType', 'significance');
+            this.set('categorySortOrder', 'desc');
+
+            this._openRemoteFile('./path-info.json', function(content) {
+                me.categories = JSON.parse(content);
+            });
+
+        },
+        computeCategoryFilter: function(string) {
+            if (!string || string == '') {
+                // set filter to null to disable filtering
+                return null;
+            } else {
+                string = string.toLowerCase();
+                return function(c) {
+                    var tokens = [];
+                    for (var i = 0; i < c.paths.length; i++) {
+                        var p = c.paths[i];
+                        if (p.tokens != null && Array.isArray(p.tokens)) {
+                            var tokens = tokens.concat(p.tokens)
+                        }
+                    }
+                    return (c.name.toLowerCase().indexOf(string) != -1 ||
+                        c.id.toLowerCase().indexOf(string) != -1 ||
+                        tokens.indexOf(string) != -1);
+                };
+            }
+        },
+        handleCategoryClick: function(e) {
+            var category = e.model.item;
+            console.log(category);
+            this.set('circuits', category.paths);
+            // TODO
+            // this._selectPathway(e.model.item);
+        },
+        handleCircuitClick: function(e) {
+            var circuit = e.model.item;
+            console.log(circuit);
+        },
+        isSelected: function(item, selected) {
+            return selected != null && item.id === selected.id;
+        },
+        checkCategorySort: function(type, order) {
+            if (type == 'alpha') {
+                if (order == 'asc') {
+                    return function(a, b) {
+                        return a.name.localeCompare(b.name)
+                    }
+                } else {
+                    return function(a, b) {
+                        return b.name.localeCompare(a.name)
+                    }
+                }
+            } else {
+                if (order == 'asc') {
+                    return function(a, b) {
+                        if (a.haschanged && !b.haschanged) {
+                            return 1;
+                        }
+                        if (b.haschanged && !a.haschanged) {
+                            return -1;
+                        }
+                        return a.name.localeCompare(b.name)
+                    }
+                } else {
+                    return function(a, b) {
+                        if (a.haschanged && !b.haschanged) {
+                            return -1;
+                        }
+                        if (b.haschanged && !a.haschanged) {
+                            return 1;
+                        }
+                        return a.name.localeCompare(b.name)
+                    }
+                }
+            }
+        },
+        countChanged: function(list) {
+            var count = 0;
+            for (var i = 0; i < list.length; i++) {
+                var item = list[i];
+                // console.log(pw.haschanged);
+                if (item.haschanged === true) {
+                    count++;
+                }
+            }
+            return count;
+        },
+        handleAlphaSort: function(e) {
+            var icon = e.currentTarget.firstChild;
+            this.set('categorySortType', 'alpha');
+            if (icon.classList.contains('fa-sort-alpha-asc')) {
+                icon.classList.remove('fa-sort-alpha-asc');
+                icon.classList.add('fa-sort-alpha-desc');
+                this.set('categorySortOrder', 'desc');
+            } else {
+                icon.classList.remove('fa-sort-alpha-desc');
+                icon.classList.add('fa-sort-alpha-asc');
+                this.set('categorySortOrder', 'asc');
+            }
+        },
+        handleSignificanceSort: function(e) {
+            var icon = e.currentTarget.firstChild;
+            this.set('categorySortType', 'significance');
+            if (icon.classList.contains('fa-sort-amount-asc')) {
+                icon.classList.remove('fa-sort-amount-asc');
+                icon.classList.add('fa-sort-amount-desc');
+                this.set('categorySortOrder', 'desc');
+            } else {
+                icon.classList.remove('fa-sort-amount-desc');
+                icon.classList.add('fa-sort-amount-asc');
+                this.set('categorySortOrder', 'asc');
+            }
+        },
+        /* ************** */
+        /* ************** */
+        /* Help functions */
+        /* ************** */
+        _openRemoteFile: function(filepath, cb) {
+            var me = this;
+            var request = new XMLHttpRequest();
+            request.onload = function() {
+                cb(this.responseText);
+            };
+            request.onerror = function() {
+                console.log('Error loading remote file');
+            };
+            request.open("GET", filepath);
+            request.send();
+        },
+        _openRemoteFileArrayBuffer: function(filepath, cb) {
+            var me = this;
+            var request = new XMLHttpRequest();
+            request.onload = function() {
+                cb(this.response);
+            };
+            request.onerror = function() {
+                console.log('Error loading remote file');
+            };
+            request.open("GET", filepath);
+            request.responseType = 'arraybuffer';
+            request.send();
+        },
+    });
+</script>
