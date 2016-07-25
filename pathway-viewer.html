@@ -3,6 +3,7 @@
 <link rel="import" href="../iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="../network-viewer/network-viewer.html">
 
+
 <link rel="import" href="../iron-list/iron-list.html">
 
 
@@ -15,7 +16,6 @@
             font-family: 'Lato', 'Helvetica Neue', Helvetica, Arial, 'sans-serif' !important;
             height: 100%;
             width: 100%;
-            background-color: var(--light-secondary-color);
             @apply(--layout-horizontal);
         }
 
@@ -29,18 +29,19 @@
             box-sizing: border-box;
             width: calc(100% - 300px);
             height: 100%;
-            padding: 10px;
         }
 
         #left-label {
             @apply(--layout-horizontal);
+            @apply(--layout-center);
+            height: 25px;
         }
 
         #right {
             box-sizing: border-box;
             width: 300px;
             height: 100%;
-            padding: 10px 10px 10px 0;
+            padding: 0 0 0 10px;
             @apply(--layout-vertical);
         }
 
@@ -64,60 +65,57 @@
 
         :host::content.right-label,
         .label {
+            @apply(--layout-horizontal);
+            @apply(--layout-center);
             color: var(--secondary-text-color);
             height: 25px;
-            line-height: 25px;
             padding-left: 5px;
-        }
-
-        :host::content.left-label {
-            line-height: 25px;
         }
         /* List items */
 
-        .listbox > div {
+        .listbox> div {
             cursor: pointer;
             padding: 1px 4px;
             border: 1px solid transparent;
             color: #555;
         }
 
-        .listbox > div:hover {
+        .listbox> div:hover {
             background-color: var(--hover-color);
             border-color: var(--accent-color);
         }
 
-        .listbox > div[data-checked] {
+        .listbox> div[data-checked] {
             background-color: var(--accent-color);
         }
 
-        .listbox > div > span[data-haschanged] {
+        .listbox> div> span[data-haschanged] {
             margin-right: 3px;
             color: #000;
             font-weight: bold;
         }
 
-        .listbox > div > span[data-down][data-haschanged]:before,
-        .listbox > div > span[data-up][data-haschanged]:before {
+        .listbox> div> span[data-down][data-haschanged]:before,
+        .listbox> div> span[data-up][data-haschanged]:before {
             margin-right: 3px;
             color: #aaa;
         }
 
-        .listbox > div > span[data-up][data-haschanged]:before {
+        .listbox> div> span[data-up][data-haschanged]:before {
             font-family: 'FontAwesome';
             content: '\f176';
         }
 
-        .listbox > div > span[data-down][data-haschanged]:before {
+        .listbox> div> span[data-down][data-haschanged]:before {
             font-family: 'FontAwesome';
             content: '\f175';
         }
 
-        .listbox > div > span[data-upsig][data-haschanged]:before {
+        .listbox> div> span[data-upsig][data-haschanged]:before {
             color: #cc0000;
         }
 
-        .listbox > div > span[data-downsig][data-haschanged]:before {
+        .listbox> div> span[data-downsig][data-haschanged]:before {
             color: #005aa3;
         }
 
@@ -133,22 +131,22 @@
     <template>
         <div id="left">
             <div id="left-label">
-                <div class="label">Viewer:</div>
+                <div class="label" style="font-size:20px;">{{leftTitle}}</div>
                 <div class="flex"></div>
                 <content select=".left-label"></content>
             </div>
-            <!-- <network-viewer></network-viewer> -->
+            <!-- <network-viewer id="networkViewer"></network-viewer> -->
             <!-- <network-viewer lite></network-viewer> -->
-            <network-viewer id="networkViewer" hide-node-render hide-edge-render></network-viewer>
+            <!-- <network-viewer hide-node-render hide-edge-render></network-viewer> -->
             <!-- <network-viewer lite hide-node-render hide-edge-render></network-viewer> -->
-            <!-- <network-viewer hide-bar hide-tool-bar hide-edition-bar hide-status-bar hide-node-render hide-edge-render></network-viewer> -->
+            <network-viewer id="networkViewer" hide-bar hide-tool-bar hide-edition-bar hide-status-bar hide-node-render hide-edge-render disable-context-menu></network-viewer>
         </div>
         <div id="right">
             <div class="label horizontal layout">
-                <div> list:</div>
+                <div> Category:</div>
                 <div class="flex"></div>
-                <span style="color:#000">{{countChanged(categories)}}</span>
-                <span style="color:#666">&nbsp;altered</span>
+                <span hidden="{{hideAltered}}" style="color:#000">{{countChanged(categories)}}</span>
+                <span hidden="{{hideAltered}}" style="color:#666">&nbsp;altered</span>
             </div>
             <div class="horizontal layout">
                 <input class="stv" type="text" placeholder="Filter..." value="{{categorySearchString::input}}">
@@ -169,8 +167,8 @@
             <div class="label horizontal layout">
                 <label class="stv">Circuit list:</label>
                 <div class="flex"></div>
-                <span style="color:#000">{{countChanged(circuits)}}</span>
-                <span style="color:#666">&nbsp;altered</span>
+                <span hidden="{{hideAltered}}" style="color:#000">{{countChanged(circuits)}}</span>
+                <span hidden="{{hideAltered}}" style="color:#666">&nbsp;altered</span>
             </div>
             <div id="circuits" class="box listbox">
                 <template is="dom-repeat" items="{{circuits}}">
@@ -202,21 +200,114 @@
             },
             selectedCircuit: {
                 type: Object
+            },
+            leftTitle: {
+                type: String,
+                value: 'Pathway viewer'
+            },
+            sessionFileNameMap: {
+                type: Object,
+                value: {}
+            },
+            pathType: {
+                type: String,
+                reflectToAttribute: true,
+                value: ''
+            },
+            path: {
+                type: String,
+                reflectToAttribute: true,
+                value: ''
+            },
+            backgroundColor: {
+                type: String,
+                value: '#F1F5F5'
+            },
+            hideAltered: {
+                type: Boolean,
+                reflectToAttribute: true,
+                value: false
             }
         },
+        observers: [
+            'pathTypeChanged(pathType, path)'
+        ],
         ready: function() {
             var me = this;
-            this.networkViewer = this.$.networkViewer;
+            this.$.networkViewer.backgroundColor = this.backgroundColor;
             this.set('categories', []);
             this.set('circuits', []);
 
             this.set('categorySortType', 'significance');
             this.set('categorySortOrder', 'desc');
-
-            this._openRemoteFile('./path-info.json', function(content) {
-                me.categories = JSON.parse(content);
+        },
+        clean: function() {
+            this.set('categories', null);
+            this.set('selectedCategory', null);
+            this.set('circuits', null);
+            this.set('selectedCircuit', null);
+            this.set('leftTitle', 'Pathway viewer');
+            this.set('sessionFileNameMap', {});
+            this.$.networkViewer.startOver();
+        },
+        reload: function() {
+            this.pathTypeChanged(this.pathType, this.path);
+        },
+        pathTypeChanged: function(pathType, path) {
+            if (pathType != '') {
+                if (pathType == 'url') {
+                    this.loadInfoFromUrl();
+                } else if (pathType == 'session') {
+                    this.loadInfoFromSession();
+                }
+            } else {
+                console.log('Pathway viewer, please provide pathType attributes.');
+            }
+        },
+        loadInfoFromUrl: function() {
+            var me = this;
+            this._openRemoteFile('./' + this.path + '/path_info.json', function(content) {
+                me._loadCategories(JSON.parse(content));
             });
-
+        },
+        loadInfoFromSession: function() {
+            var me = this;
+            var pathInfo = this.sessionFileNameMap[this.path + '/path_info.json'];
+            if (pathInfo == null) {
+                pathInfo = this.sessionFileNameMap['path_info.json'];
+            }
+            if (pathInfo != null) {
+                SteviaManager.getFileContent(pathInfo._id, function(content) {
+                    me._loadCategories(content);
+                });
+            }
+        },
+        _loadCategories: function(categories) {
+            var selectedCategory;
+            for (var i = 0; i < categories.length; i++) {
+                var cat = categories[i];
+                if (this.selectedCategory != null && this.selectedCategory.id == cat.id) {
+                    selectedCategory = cat;
+                }
+            }
+            categories.sort(this.checkCategorySort('alpha', 'asc'));
+            this.set('categories', categories);
+            if (selectedCategory != null) {
+                this.selectCategory(selectedCategory);
+            } else {
+                this.selectCategory(categories[0]);
+            }
+        },
+        loadFile: function(filePath, cb) {
+            if (this.pathType == 'url') {
+                this._openRemoteFile('./' + this.path + '/' + filePath, function(content) {
+                    cb(content);
+                });
+            } else if (this.pathType == 'session') {
+                SteviaManager.getFileContent(this.sessionFileNameMap[filePath]._id, function(content) {
+                    cb(content);
+                });
+            }
         },
         computeCategoryFilter: function(string) {
             if (!string || string == '') {
@@ -241,14 +332,82 @@
         handleCategoryClick: function(e) {
             var category = e.model.item;
             console.log(category);
-            this.set('circuits', category.paths);
-            // TODO
-            // this._selectPathway(e.model.item);
+            this.selectCategory(category);
         },
         handleCircuitClick: function(e) {
             var circuit = e.model.item;
             console.log(circuit);
+            this.selectCircuit(circuit);
         },
+        selectCategory: function(category) {
+            var me = this;
+            this.loadFile(me.path + '/' + category.id + '.sif', function(sif) {
+                me.loadFile(me.path + '/' + category.id + '.natt', function(natt) {
+                    me.loadFile(me.path + '/' + category.id + '.eatt', function(eatt) {
+                        category.paths.sort(me.checkCategorySort('significance', 'desc'));
+                        me.set('circuits', category.paths);
+                        me.set('leftTitle', category.name + ' (' + category.id + ')');
+                        me.set('selectedCategory', category);
+
+                        me.$.networkViewer.startOver();
+                        me.$.networkViewer.backgroundColor = me.backgroundColor;
+                        me.$.networkViewer.loadSif(sif);
+                        me.$.networkViewer.loadNodeAttributes(natt, true);
+                        me.$.networkViewer.loadEdgeAttributes(eatt, true);
+
+                        //networkViewer.$.nodeRender.applyDirect('color','color');
+                        me.$.networkViewer.$.nodeRender.applyDirect('exp', 'strokeColor');
+                        me.$.networkViewer.$.nodeRender.applyDirect('diff.exp', 'color');
+                        me.$.networkViewer.$.nodeRender.applyDirect('shape', 'shape');
+                        me.$.networkViewer.$.nodeRender.applyDirect('width', 'size');
+                        me.$.networkViewer.$.nodeRender.applyDirect('labelSize', 'labelSize');
+                        me.$.networkViewer.$.edgeRender.applyDirect('color', 'color');
+                        me.$.networkViewer.$.edgeRender.applyDirect('head', 'shape');
+                        me.$.networkViewer.setVertexDefaultPositionX('X', true, false);
+                        me.$.networkViewer.setVertexDefaultPositionY('Y', true, true);
+                        me.$.networkViewer.setVertexDefaultLabelAttribute('label');
+                        me.fire('select-category', category);
+                    })
+                })
+            });
+        },
+        selectCircuit: function(circuit) {
+            var me = this;
+            if (this.selectedCircuit != null && circuit.id === this.selectedCircuit.id) {
+                this.set('selectedCircuit', null);
+                this.$.networkViewer.$.nodeRender.removeVisualSet('opacity');
+                this.$.networkViewer.$.edgeRender.removeVisualSet('opacity');
+            } else {
+                this.set('selectedCircuit', circuit);
+                var attrId = circuit.id.split('__').pop();
+                this.$.networkViewer.$.nodeRender.applyVisualSet({
+                    attribute: attrId,
+                    displayProperty: 'opacity',
+                    type: "discrete",
+                    matches: {
+                        "1": "1",
+                        "0": "0.1"
+                    },
+                    points: [],
+                    parse: "string",
+                    enabled: true
+                });
+                this.$.networkViewer.$.edgeRender.applyVisualSet({
+                    attribute: attrId,
+                    displayProperty: 'opacity',
+                    type: "discrete",
+                    matches: {
+                        "1": "1",
+                        "0": "0.1"
+                    },
+                    points: [],
+                    parse: "string",
+                    enabled: true
+                });
+            }
+            me.fire('select-circuit', this.selectedCircuit);
+        },
+
         isSelected: function(item, selected) {
             return selected != null && item.id === selected.id;
         },
@@ -289,11 +448,13 @@
         },
         countChanged: function(list) {
             var count = 0;
-            for (var i = 0; i < list.length; i++) {
-                var item = list[i];
-                // console.log(pw.haschanged);
-                if (item.haschanged === true) {
-                    count++;
+            if (Array.isArray(list)) {
+                for (var i = 0; i < list.length; i++) {
+                    var item = list[i];
+                    // console.log(pw.haschanged);
+                    if (item.haschanged === true) {
+                        count++;
+                    }
                 }
             }
             return count;

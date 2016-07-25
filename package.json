@@ -1,9 +1,17 @@
 {
-  "name": "pathway-viewer",
-  "version": "0.0.1",
-  "description": "",
-  "repository": {
-    "type": "git",
-    "url": ""
-  }
+    "name": "pathway-viewer",
+    "version": "0.0.1",
+    "description": "",
+    "repository": {
+        "type": "git",
+        "url": ""
+    },
+    "scripts": {
+        "build": "node ./build.js"
+    },
+    "devDependencies": {
+        "async": "^2.0.0-rc.6",
+        "shelljs": "^0.7.0",
+        "vulcanize": "^1.14.8"
+    }
 }

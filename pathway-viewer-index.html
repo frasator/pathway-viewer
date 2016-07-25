@@ -46,7 +46,7 @@
         <!--CSS-->
         <link href='../stevia-elements/css/global.css' rel='stylesheet' type='text/css'>
         <link href='../stevia-elements/css/form.css' rel='stylesheet' type='text/css'>
-        <link href='../stevia-elements/css/dropdown.css' rel='stylesheet' type='text/css'>
+        <link href='../stevia-elements/css/context.css' rel='stylesheet' type='text/css'>
 
 
         <!--Web Components-->
@@ -56,10 +56,15 @@
 
         <link rel="import" href="conf/theme.html">
 
+        <style>
+            pathway-viewer {
+                background-color: #EDEDED;
+            }
+        </style>
     </head>
 
     <body unresolved class="fullbleed">
-        <pathway-viewer class="container">
+        <pathway-viewer class="container" path="../pathways" path-type="url">
             <div class="right-label ">
                 External box:
             </div>
