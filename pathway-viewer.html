@@ -300,7 +300,7 @@
         },
         loadFile: function(filePath, cb) {
             if (this.pathType == 'url') {
-                this._openRemoteFile('./' + this.path + '/' + filePath, function(content) {
+                this._openRemoteFile(filePath, function(content) {
                     cb(content);
                 });
             } else if (this.pathType == 'session') {
