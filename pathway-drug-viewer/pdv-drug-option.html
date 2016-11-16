@@ -1,0 +1,42 @@
+<link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="../../iron-flex-layout/iron-flex-layout-classes.html">
+<dom-module id="pdv-drug-option">
+    <style is="custom-style" include="iron-flex iron-flex-reverse iron-flex-alignment iron-flex-factors iron-positioning"></style>
+    <style>
+        :host {
+            display: block;
+            position: relative;
+            box-sizing: border-box;
+            word-break: break-all;
+            cursor: pointer;
+        }
+
+        .name {
+            margin-right: 3px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+    </style>
+    <template>
+        <label class="stv-control" title$="{{drug.n}}">
+            <input type="checkbox" checked$="{{drug.s}}" on-click="handleClick">
+            <span class="name">{{drug.n}}</span>
+        </label>
+    </template>
+    <script>
+        Polymer({
+            is: 'pdv-drug-option',
+            properties: {
+                drug: {
+                    type: Object
+                }
+            },
+            handleClick: function(e) {
+                var input = e.currentTarget;
+                this.set('drug.s', input.checked);
+                this.fire('selected-change', input.checked);
+            }
+        });
+    </script>
+</dom-module>

@@ -1,0 +1,165 @@
+<link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="../../iron-flex-layout/iron-flex-layout-classes.html">
+<dom-module id="pdv-gene-option">
+    <style is="custom-style" include="iron-flex iron-flex-reverse iron-flex-alignment iron-flex-factors iron-positioning"></style>
+    <style>
+        :host {
+            display: block;
+            position: relative;
+            box-sizing: border-box;
+            word-break: break-all;
+        }
+
+        :host[manual] {
+            color: var(--primary-text-color);
+        }
+
+        #main {
+            margin-top: 3px;
+            margin-left: 6px;
+            margin-right: 3px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .name {
+            margin-right: 3px;
+        }
+
+        .value {
+            width: 80px;
+        }
+
+        .delete {
+            cursor: pointer;
+            margin-right: 3px;
+            margin-left: 6px;
+            color: var(--secondary-text-color);
+        }
+
+        .delete:hover {
+            color: #880000 !important;
+        }
+
+        .fa {
+            text-align: center;
+            width: 10px;
+        }
+
+        input[readonly] {
+            color: #777 !important;
+        }
+
+        .drugaction {
+            margin: 1px;
+            padding: 1px 2px;
+            background-color: #ddd;
+        }
+
+        .fa-flask {
+            color: #40be20;
+        }
+
+        .fa-reply {
+            color: #ff8a00;
+            margin-left: 3px;
+        }
+    </style>
+    <template>
+        <div id="main" class="horizontal layout center">
+            <div class="name flex">{{name}}</div>
+            <div class="value">
+                <input id="input" class="stv" type="number" max="1" min="0" step="0.05" value="{{internalValue::input}}" readonly$="{{checkAtLeastOneDrugAction(drugactions)}}" />
+            </div>
+            <div hidden="{{!manual}}" class="delete" on-click="handleRemove">
+                <i class="fa fa-times"></i>
+            </div>
+        </div>
+        <div class="horizontal layout wrap">
+            <template is="dom-repeat" items="{{drugactions}}">
+                <div class="drugaction" hidden$="{{!checkAtLeastOneDrugAction(drugactions)}}">
+                    <i class="fa fa-flask"></i> {{item.drug}} <i hidden$="{{!existsAction(item.action)}}" class="fa fa-reply fa-flip-horizontal"></i> {{item.action}}
+                </div>
+            </template>
+        </div>
+    </template>
+    <script>
+        Polymer({
+            is: 'pdv-gene-option',
+            properties: {
+                name: {
+                    type: String,
+                    reflectToAttribute: true,
+                    notify: true
+                },
+                manual: {
+                    type: Boolean,
+                    reflectToAttribute: true,
+                    value: false,
+                    observer: 'manualChanged'
+                },
+                value: {
+                    type: Number,
+                    notify: true,
+                    value: -1,
+                    observer: 'valueChanged'
+                },
+                drugactions: {
+                    type: Array,
+                    value: function() {
+                        return []
+                    },
+                    observer: 'drugactionsChanged'
+                },
+                internalValue: {
+                    type: Number,
+                    notify: true,
+                    observer: 'internalValueChanged',
+                    value: 0
+                }
+            },
+            handleRemove: function() {
+                this.fire('remove', this.name);
+            },
+            handleInput: function(e) {
+                this.fire('changed', e.currentTarget.value);
+            },
+            internalValueChanged: function(neo, old) {
+                if (this.drugactions == null || this.drugactions.length === 0) {
+                    this.value = this.internalValue;
+                }
+                this.fire('changed', this.internalValue);
+            },
+            existsAction: function(a) {
+                return a != null && a !== '';
+            },
+            checkAtLeastOneDrugAction: function(drugactions) {
+                return Array.isArray(drugactions) && drugactions.length > 0;
+            },
+            valueChanged: function(neo, old) {
+                this.recalculateInternalValue();
+            },
+            manualChanged: function(neo, old) {
+                this.recalculateInternalValue();
+            },
+            drugactionsChanged: function(neo, old) {
+                this.recalculateInternalValue();
+            },
+            recalculateInternalValue: function() {
+                var v;
+                if (Array.isArray(this.drugactions) && this.drugactions.length > 0) {
+                    var dv = 1;
+                    for (var i = 0; i < this.drugactions.length; i++) {
+                        var da = this.drugactions[i];
+                        dv *= da.drugvalue;
+                    }
+                    v = dv;
+                } else {
+                    v = this.value;
+                }
+                this.set('internalValue', v);
+            }
+        });
+    </script>
+</dom-module>

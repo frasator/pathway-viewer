@@ -2,6 +2,9 @@
 <link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="../network-viewer/network-viewer.html">
+<script src="../async/dist/async.min.js"></script>
+
+<script src="images/hipathia_legend.js"></script>
 
 
 <link rel="import" href="../iron-list/iron-list.html">
@@ -9,14 +12,26 @@
 
 <dom-module id="pathway-viewer">
     <style is="custom-style" include="iron-flex iron-flex-reverse iron-flex-alignment iron-flex-factors iron-positioning">
-        :host {
+         :host {
             box-sizing: border-box;
             position: relative;
             font-size: 13px;
             font-family: 'Lato', 'Helvetica Neue', Helvetica, Arial, 'sans-serif' !important;
             height: 100%;
             width: 100%;
+            @apply(--layout-vertical);
+        }
+
+        #main {
+            box-sizing: border-box;
+            position: relative;
+            height: 100%;
+            width: 100%;
             @apply(--layout-horizontal);
+        }
+
+         :host[show-hipathia-legend]>#main {
+            height: calc(100% - 200px) !important;
         }
 
         #categories,
@@ -26,6 +41,7 @@
         }
 
         #left {
+            position: relative;
             box-sizing: border-box;
             width: calc(100% - 300px);
             height: 100%;
@@ -38,6 +54,7 @@
         }
 
         #right {
+            position: relative;
             box-sizing: border-box;
             width: 300px;
             height: 100%;
@@ -52,18 +69,18 @@
 
         network-viewer,
         .box,
-        :host::content .right-box {
+         :host::content .right-box {
             border: 1px solid var(--divider-color);
             box-shadow: 0 0 2px rgba(0, 0, 0, 0.2);
             background-color: var(--text-primary-color);
         }
 
         .label:not(:first-child),
-        :host::content.right-label:not(:first-child) {
+         :host::content.right-label:not(:first-child) {
             padding-top: 10px;
         }
 
-        :host::content.right-label,
+         :host::content.right-label,
         .label {
             @apply(--layout-horizontal);
             @apply(--layout-center);
@@ -73,49 +90,49 @@
         }
         /* List items */
 
-        .listbox> div {
+        .listbox>div {
             cursor: pointer;
             padding: 1px 4px;
             border: 1px solid transparent;
             color: #555;
         }
 
-        .listbox> div:hover {
+        .listbox>div:hover {
             background-color: var(--hover-color);
             border-color: var(--accent-color);
         }
 
-        .listbox> div[data-checked] {
+        .listbox>div[data-checked] {
             background-color: var(--accent-color);
         }
 
-        .listbox> div> span[data-haschanged] {
+        .listbox>div>span[data-haschanged] {
             margin-right: 3px;
             color: #000;
             font-weight: bold;
         }
 
-        .listbox> div> span[data-down][data-haschanged]:before,
-        .listbox> div> span[data-up][data-haschanged]:before {
+        .listbox>div>span[data-down][data-haschanged]:before,
+        .listbox>div>span[data-up][data-haschanged]:before {
             margin-right: 3px;
             color: #aaa;
         }
 
-        .listbox> div> span[data-up][data-haschanged]:before {
+        .listbox>div>span[data-up][data-haschanged]:before {
             font-family: 'FontAwesome';
             content: '\f176';
         }
 
-        .listbox> div> span[data-down][data-haschanged]:before {
+        .listbox>div>span[data-down][data-haschanged]:before {
             font-family: 'FontAwesome';
             content: '\f175';
         }
 
-        .listbox> div> span[data-upsig][data-haschanged]:before {
+        .listbox>div>span[data-upsig][data-haschanged]:before {
             color: #cc0000;
         }
 
-        .listbox> div> span[data-downsig][data-haschanged]:before {
+        .listbox>div>span[data-downsig][data-haschanged]:before {
             color: #005aa3;
         }
 
@@ -129,59 +146,65 @@
         }
     </style>
     <template>
-        <div id="left">
-            <div id="left-label">
-                <div class="label" style="font-size:20px;">{{leftTitle}}</div>
-                <div class="flex"></div>
-                <content select=".left-label"></content>
-            </div>
-            <!-- <network-viewer id="networkViewer"></network-viewer> -->
-            <!-- <network-viewer lite></network-viewer> -->
-            <!-- <network-viewer hide-node-render hide-edge-render></network-viewer> -->
-            <!-- <network-viewer lite hide-node-render hide-edge-render></network-viewer> -->
-            <network-viewer id="networkViewer" hide-bar hide-tool-bar hide-edition-bar hide-status-bar hide-node-render hide-edge-render disable-context-menu></network-viewer>
+        <div hidden$="{{!showHipathiaLegend}}" style="text-align:right;">
+            <img src$="{{_hipathiaLegendImage}}"></img>
         </div>
-        <div id="right">
-            <div class="label horizontal layout">
-                <div> Category:</div>
-                <div class="flex"></div>
-                <span hidden="{{hideAltered}}" style="color:#000">{{countChanged(categories)}}</span>
-                <span hidden="{{hideAltered}}" style="color:#666">&nbsp;altered</span>
+        <div id="main">
+            <div id="left">
+                <div id="left-label">
+                    <div class="label" style="font-size:20px;">{{leftTitle}}</div>
+                    <div class="flex"></div>
+                    <content select=".left-label"></content>
+                </div>
+                <!-- <network-viewer id="networkViewer"></network-viewer> -->
+                <!-- <network-viewer lite></network-viewer> -->
+                <!-- <network-viewer hide-node-render hide-edge-render></network-viewer> -->
+                <!-- <network-viewer lite hide-node-render hide-edge-render></network-viewer> -->
+                <network-viewer id="networkViewer" hide-bar hide-tool-bar hide-edition-bar hide-status-bar hide-node-render hide-edge-render disable-context-menu></network-viewer>
             </div>
-            <div class="horizontal layout">
-                <input class="stv" type="text" placeholder="Filter..." value="{{categorySearchString::input}}">
-                <div class="stv-btn button" style="border-right-width:0;border-left-width:0;" on-click="handleSignificanceSort"><i class="fa fa-sort-amount-asc"></i></div>
-                <div class="stv-btn button" on-click="handleAlphaSort"><i class="fa fa-sort-alpha-asc"></i></div>
-            </div>
-            <div id="categories" class="box listbox">
-                <template is="dom-repeat" items="{{categories}}" filter="{{computeCategoryFilter(categorySearchString)}}" sort="{{checkCategorySort(categorySortType, categorySortOrder)}}">
-                    <div on-click="handleCategoryClick" data-checked$="{{isSelected(item, selectedCategory)}}">
-                        <span data-up$="{{item.up}}" data-upsig$="{{item.upsig}}" data-haschanged$="{{item.haschanged}}"></span>
-                        <span data-down$="{{item.down}}" data-downsig$="{{item.downsig}}" data-haschanged$="{{item.haschanged}}"></span>
-                        <span data-haschanged$="{{item.haschanged}}">{{item.name}}</span>
-                    </div>
-                </template>
-            </div>
+            <div id="right">
+                <div class="label horizontal layout">
+                    <div> Category:</div>
+                    <div class="flex"></div>
+                    <span hidden="{{hideAltered}}" style="color:#000">{{countChanged(categories)}}</span>
+                    <span hidden="{{hideAltered}}" style="color:#666">&nbsp;altered</span>
+                </div>
+                <div class="horizontal layout">
+                    <input class="stv" type="text" placeholder="Filter..." value="{{categorySearchString::input}}">
+                    <div class="stv-btn button" style="border-right-width:0;border-left-width:0;" on-click="handleSignificanceSort"><i class="fa fa-sort-amount-asc"></i></div>
+                    <div class="stv-btn button" on-click="handleAlphaSort"><i class="fa fa-sort-alpha-asc"></i></div>
+                </div>
+                <div id="categories" class="box listbox">
+                    <template is="dom-repeat" items="{{categories}}" filter="{{computeCategoryFilter(categorySearchString)}}" sort="{{checkCategorySort(categorySortType, categorySortOrder)}}">
+                        <div on-click="handleCategoryClick" data-checked$="{{isSelected(item, selectedCategory)}}">
+                            <span data-up$="{{item.up}}" data-upsig$="{{item.upsig}}" data-haschanged$="{{item.haschanged}}"></span>
+                            <span data-down$="{{item.down}}" data-downsig$="{{item.downsig}}" data-haschanged$="{{item.haschanged}}"></span>
+                            <span data-haschanged$="{{item.haschanged}}">{{item.name}}</span>
+                        </div>
+                    </template>
+                </div>
 
 
-            <div class="label horizontal layout">
-                <label class="stv">Circuit list:</label>
-                <div class="flex"></div>
-                <span hidden="{{hideAltered}}" style="color:#000">{{countChanged(circuits)}}</span>
-                <span hidden="{{hideAltered}}" style="color:#666">&nbsp;altered</span>
-            </div>
-            <div id="circuits" class="box listbox">
-                <template is="dom-repeat" items="{{circuits}}">
-                    <div on-click="handleCircuitClick" data-checked$="{{isSelected(item, selectedCircuit)}}">
-                        <span data-up$="{{item.up}}" data-upsig$="{{item.upsig}}" data-haschanged$="{{item.haschanged}}"></span>
-                        <span data-down$="{{item.down}}" data-downsig$="{{item.downsig}}" data-haschanged$="{{item.haschanged}}"></span>
-                        <span data-haschanged$="{{item.haschanged}}">{{item.shortname}}</span>
-                    </div>
-                </template>
+                <div class="label horizontal layout">
+                    <label class="stv">Circuit list:</label>
+                    <div class="flex"></div>
+                    <span hidden="{{hideAltered}}" style="color:#000">{{countChanged(circuits)}}</span>
+                    <span hidden="{{hideAltered}}" style="color:#666">&nbsp;altered</span>
+                </div>
+                <div id="circuits" class="box listbox">
+                    <template is="dom-repeat" items="{{circuits}}">
+                        <div on-click="handleCircuitClick" data-checked$="{{isSelected(item, selectedCircuit)}}">
+                            <span data-up$="{{item.up}}" data-upsig$="{{item.upsig}}" data-haschanged$="{{item.haschanged}}"></span>
+                            <span data-down$="{{item.down}}" data-downsig$="{{item.downsig}}" data-haschanged$="{{item.haschanged}}"></span>
+                            <span data-haschanged$="{{item.haschanged}}">{{item.shortname}}</span>
+                        </div>
+                    </template>
+                </div>
+
+                <content select=".right-label"></content>
+                <content select=".right-box"></content>
             </div>
 
-            <content select=".right-label"></content>
-            <content select=".right-box"></content>
         </div>
     </template>
 </dom-module>
@@ -227,6 +250,15 @@
                 type: Boolean,
                 reflectToAttribute: true,
                 value: false
+            },
+            showHipathiaLegend: {
+                type: Boolean,
+                reflectToAttribute: true,
+                value: false
+            },
+            _hipathiaLegendImage: {
+                type: String,
+                value: HIPATHIA_LEGEND_IMAGE
             }
         },
         observers: [
@@ -309,6 +341,32 @@
                 });
             }
         },
+        loadFiles: function(filePathList, callback) {
+            var me = this;
+            var createTask = function(filePath) {
+                if (me.pathType == 'url') {
+                    return function(cb) {
+                        me._openRemoteFile(filePath, function(content) {
+                            cb(null, content);
+                        });
+                    }
+                } else if (me.pathType == 'session') {
+                    return function(cb) {
+                        SteviaManager.getFileContent(me.sessionFileNameMap[filePath]._id, function(content) {
+                            cb(null, content);
+                        });
+                    }
+                }
+            }
+            var tasks = [];
+            for (var i = 0; i < filePathList.length; i++) {
+                var filePath = filePathList[i];
+                tasks.push(createTask(filePath));
+            }
+            async.parallel(tasks, function(err, results) {
+                callback(results);
+            });
+        },
         computeCategoryFilter: function(string) {
             if (!string || string == '') {
                 // set filter to null to disable filtering
@@ -341,34 +399,109 @@
         },
         selectCategory: function(category) {
             var me = this;
-            this.loadFile(me.path + '/' + category.id + '.sif', function(sif) {
-                me.loadFile(me.path + '/' + category.id + '.natt', function(natt) {
-                    me.loadFile(me.path + '/' + category.id + '.eatt', function(eatt) {
-                        category.paths.sort(me.checkCategorySort('significance', 'desc'));
-                        me.set('circuits', category.paths);
-                        me.set('leftTitle', category.name + ' (' + category.id + ')');
-                        me.set('selectedCategory', category);
+            this.loadFiles([
+                me.path + '/' + category.id + '.sif',
+                me.path + '/' + category.id + '.natt',
+                me.path + '/' + category.id + '.eatt'
+            ], function(results) {
+                var sif = results[0];
+                var natt = results[1];
+                var eatt = results[2];
 
-                        me.$.networkViewer.startOver();
-                        me.$.networkViewer.backgroundColor = me.backgroundColor;
-                        me.$.networkViewer.loadSif(sif);
-                        me.$.networkViewer.loadNodeAttributes(natt, true);
-                        me.$.networkViewer.loadEdgeAttributes(eatt, true);
+                category.paths.sort(me.checkCategorySort('significance', 'desc'));
+                me.set('circuits', category.paths);
+                me.set('leftTitle', category.name + ' (' + category.id + ')');
+                me.set('selectedCategory', category);
 
-                        //networkViewer.$.nodeRender.applyDirect('color','color');
-                        me.$.networkViewer.$.nodeRender.applyDirect('exp', 'strokeColor');
-                        me.$.networkViewer.$.nodeRender.applyDirect('diff.exp', 'color');
-                        me.$.networkViewer.$.nodeRender.applyDirect('shape', 'shape');
-                        me.$.networkViewer.$.nodeRender.applyDirect('width', 'size');
-                        me.$.networkViewer.$.nodeRender.applyDirect('labelSize', 'labelSize');
-                        me.$.networkViewer.$.edgeRender.applyDirect('color', 'color');
-                        me.$.networkViewer.$.edgeRender.applyDirect('head', 'shape');
-                        me.$.networkViewer.setVertexDefaultPositionX('X', true, false);
-                        me.$.networkViewer.setVertexDefaultPositionY('Y', true, true);
-                        me.$.networkViewer.setVertexDefaultLabelAttribute('label');
-                        me.fire('select-category', category);
-                    })
-                })
+                me.$.networkViewer.startOver();
+                me.$.networkViewer.backgroundColor = me.backgroundColor;
+                me.$.networkViewer.loadSif(sif);
+                me.$.networkViewer.loadNodeAttributes(natt, true);
+                me.$.networkViewer.loadEdgeAttributes(eatt, true);
+
+                //networkViewer.$.nodeRender.applyDirect('color','color');
+                me.$.networkViewer.$.nodeRender.applyDirect('exp', 'strokeColor');
+                me.$.networkViewer.$.nodeRender.applyDirect('diff.exp', 'color');
+                me.$.networkViewer.$.nodeRender.applyDirect('shape', 'shape');
+                me.$.networkViewer.$.nodeRender.applyDirect('width', 'size');
+                me.$.networkViewer.$.nodeRender.applyDirect('labelSize', 'labelSize');
+                me.$.networkViewer.$.edgeRender.applyDirect('color', 'color');
+                me.$.networkViewer.$.edgeRender.applyDirect('head', 'shape');
+                me.$.networkViewer.setVertexDefaultPositionX('X', true, false);
+                me.$.networkViewer.setVertexDefaultPositionY('Y', true, true);
+                me.$.networkViewer.setVertexDefaultLabelAttribute('label');
+                me.fire('select-category', category);
+
+                //TODO
+                // var ncolmap = {};
+                // for (var i = 0; i < me.$.networkViewer.vertexColumns.length; i++) {
+                //     var col = me.$.networkViewer.vertexColumns[i];
+                //     ncolmap[col.name] = col;
+                // }
+                //
+                // if (ncolmap['label'] != null) {
+                //     me.$.networkViewer.setVertexDefaultLabelAttribute('label');
+                // }
+                // if (ncolmap['labelSize'] != null) {
+                //     me.$.networkViewer.$.nodeRender.applyDirect('labelSize', 'labelSize');
+                // }
+                // if (ncolmap['opacity'] != null) {
+                //     me.$.networkViewer.$.nodeRender.applyDirect('opacity', 'opacity');
+                // }
+                // if (ncolmap['shape'] != null) {
+                //     me.$.networkViewer.$.nodeRender.applyDirect('shape', 'shape');
+                // }
+                // if (ncolmap['color'] != null) {
+                //     me.$.networkViewer.$.nodeRender.applyDirect('color', 'color');
+                // }
+                // if (ncolmap['strokeColor'] != null) {
+                //     me.$.networkViewer.$.nodeRender.applyDirect('strokeColor', 'strokeColor');
+                // }
+                // if (ncolmap['size'] != null) {
+                //     me.$.networkViewer.$.nodeRender.applyDirect('size', 'size');
+                // }
+                // if (ncolmap['strokeSize'] != null) {
+                //     me.$.networkViewer.$.nodeRender.applyDirect('strokeSize', 'strokeSize');
+                // }
+                // // temporal
+                // me.$.networkViewer.$.nodeRender.applyDirect('exp', 'strokeColor');
+                // me.$.networkViewer.$.nodeRender.applyDirect('diff.exp', 'color');
+                // me.$.networkViewer.$.nodeRender.applyDirect('width', 'size');
+                //
+                // var ecolmap = {};
+                // for (var i = 0; i < me.$.networkViewer.edgeColumns.length; i++) {
+                //     var col = me.$.networkViewer.edgeColumns[i];
+                //     ecolmap[col.name] = col;
+                // }
+                //
+                // if (ecolmap['label'] != null) {
+                //     me.$.networkViewer.setEdgeDefaultLabelAttribute('label');
+                // }
+                // if (ecolmap['labelSize'] != null) {
+                //     me.$.networkViewer.$.edgeRender.applyDirect('labelSize', 'labelSize');
+                // }
+                // if (ecolmap['opacity'] != null) {
+                //     me.$.networkViewer.$.edgeRender.applyDirect('opacity', 'opacity');
+                // }
+                // if (ecolmap['shaft'] != null) {
+                //     me.$.networkViewer.$.edgeRender.applyDirect('shaft', 'shaft');
+                // }
+                // if (ecolmap['shape'] != null) {
+                //     me.$.networkViewer.$.edgeRender.applyDirect('shape', 'shape');
+                // }
+                // if (ecolmap['bidirectional'] != null) {
+                //     me.$.networkViewer.$.edgeRender.applyDirect('bidirectional', 'bidirectional');
+                // }
+                // if (ecolmap['color'] != null) {
+                //     me.$.networkViewer.$.edgeRender.applyDirect('color', 'color');
+                // }
+                // if (ecolmap['size'] != null) {
+                //     me.$.networkViewer.$.edgeRender.applyDirect('size', 'size');
+                // }
+                //
+                // // temporal
+                // me.$.networkViewer.$.edgeRender.applyDirect('head', 'shape');
+
             });
         },
         selectCircuit: function(circuit) {
@@ -513,6 +646,6 @@
             request.open("GET", filepath);
             request.responseType = 'arraybuffer';
             request.send();
-        },
+        }
     });
 </script>

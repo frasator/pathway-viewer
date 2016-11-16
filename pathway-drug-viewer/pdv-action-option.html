@@ -1,0 +1,60 @@
+<link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="../../iron-flex-layout/iron-flex-layout-classes.html">
+<dom-module id="pdv-action-option">
+    <style is="custom-style" include="iron-flex iron-flex-reverse iron-flex-alignment iron-flex-factors iron-positioning"></style>
+    <style>
+        :host {
+            display: block;
+            position: relative;
+            box-sizing: border-box;
+            word-break: break-all;
+        }
+
+        #main {
+            margin-top: 3px;
+            margin-left: 6px;
+            margin-right: 3px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .name {
+            margin-right: 3px;
+            text-transform: capitalize;
+        }
+
+        .value {
+            width: 80px;
+        }
+    </style>
+    <template>
+        <div id="main" class="horizontal layout center">
+            <div class="name flex">{{name}}:</div>
+            <div class="value">
+                <input class="stv" type="number" min="0" step="0.05" value="{{value::input}}" />
+            </div>
+        </div>
+    </template>
+    <script>
+        Polymer({
+            is: 'pdv-action-option',
+            properties: {
+                name: {
+                    type: String,
+                    reflectToAttribute: true,
+                    notify: true
+                },
+                value: {
+                    type: String,
+                    reflectToAttribute: true,
+                    notify: true,
+                    observer: 'valueChanged'
+                },
+            },
+            valueChanged: function() {
+                this.fire('changed', this.value);
+            }
+        });
+    </script>
+</dom-module>

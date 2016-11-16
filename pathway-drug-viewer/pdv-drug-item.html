@@ -1,0 +1,49 @@
+<link rel="import" href="../../polymer/polymer.html">
+<link rel="import" href="../../iron-flex-layout/iron-flex-layout-classes.html">
+<dom-module id="pdv-drug-item">
+    <style is="custom-style" include="iron-flex iron-flex-reverse iron-flex-alignment iron-flex-factors iron-positioning"></style>
+    <style>
+        :host {
+            display: block;
+            position: relative;
+            box-sizing: border-box;
+            word-break: break-all;
+            padding: 2px 7px;
+        }
+
+        .name {
+            margin-right: 3px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .close {
+            cursor: pointer;
+            color: var(--secondary-text-color);
+        }
+
+        .close:hover {
+            color: #880000 !important;
+        }
+    </style>
+    <template>
+        <div class="horizontal layout">
+            <div class="name flex">{{drug.n}}</div>
+            <div class="close" on-click="handleRemove"><i class="fa fa-times"></i></div>
+        </div>
+    </template>
+    <script>
+        Polymer({
+            is: 'pdv-drug-item',
+            properties: {
+                drug: {
+                    type: Object
+                }
+            },
+            handleRemove: function(e) {
+                this.fire('remove-drug-item', this.drug);
+            },
+        });
+    </script>
+</dom-module>
