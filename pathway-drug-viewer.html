@@ -493,7 +493,7 @@
                 var category = e.detail;
                 if (category != null) {
                     this._hideKoControl();
-                    this.loading = true;
+                    // this.loading = true;
                     var init_natt = this.getFileFromName('sifs4CellMaps_init/' + category.id + '.natt');
                     SteviaManager.getFileContent(init_natt._id, function(nattInitContent) {
                         //init expression attributes
