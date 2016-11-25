@@ -155,6 +155,13 @@
                     <div class="label" style="font-size:20px;">{{leftTitle}}</div>
                     <div class="flex"></div>
                     <content select=".left-label"></content>
+                    <div class="stv-btn stv-btn-shdw" title="Export SVG image" on-click="handleExportImage">
+                        <i class="fa fa-image"></i>
+                    </div>
+                    <div class="stv-btn stv-btn-shdw" title="Center network" on-click="handleCenterNetwork" style="border-left:0">
+                        <i class="fa fa-crosshairs"></i>
+                    </div>
+
                 </div>
                 <!-- <network-viewer id="networkViewer"></network-viewer> -->
                 <!-- <network-viewer lite></network-viewer> -->
@@ -281,6 +288,16 @@
             this.set('leftTitle', 'Pathway viewer');
             this.set('sessionFileNameMap', {});
             this.$.networkViewer.startOver();
+        },
+        handleExportImage: function() {
+            var text = this.$.networkViewer.exportSVG();
+            var blob = new Blob([text], {
+                type: "image/svg+xml"
+            });
+            saveAs(blob, this.leftTitle.replace(/[^a-zA-Z0-9._\-]/g, "_") + '.svg');
+        },
+        handleCenterNetwork: function() {
+            this.$.networkViewer.centerNetwork();
         },
         reload: function() {
             this.pathTypeChanged(this.pathType, this.path);
