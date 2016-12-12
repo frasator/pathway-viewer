@@ -153,12 +153,12 @@
 
             </div>
 
-            <pathway-viewer id="pathwayViewer" path="{{path}}" path-type="session" on-select-category="handleSelectCategory" on-select-circuit="handleSelectCircuit" background-color="#fcfcfc" on-leftclickvertex="handleNetworkViewerVertexClick">
+            <pathway-viewer id="pathwayViewer" path="{{path}}" path-type="session" on-select-category="handleSelectCategory" category-label="{{categoryLabel}}" circuit-label="{{circuitLabel}}" on-select-circuit="handleSelectCircuit" background-color="#fcfcfc" on-leftclickvertex="handleNetworkViewerVertexClick">
                 <!-- <span>{{signalingPathwaysGeneNum}}</span> -->
                 <!-- <span style="margin-left:20px;">{{missingGeneNum}}</span>,
                 <span style="margin-left:10px;">{{translatedGeneNum}}</span>,
                 <span style="margin-left:10px;">{{untranslatedGeneNum}}</span> -->
-                <div class="right-label ">
+                <div class="right-label">
                     Last update gene list:
                 </div>
                 <div id="inputGeneList" class="right-box" style="height:100px;">
@@ -330,6 +330,14 @@
                     type: Boolean,
                     reflectToAttribute: true,
                     value: false
+                },
+                categoryLabel: {
+                    type: String,
+                    value: 'Categories'
+                },
+                circuitLabel: {
+                    type: String,
+                    value: 'Circuits'
                 }
             },
             handleBackButton: function() {
@@ -464,6 +472,7 @@
                 }
             },
             handleSelectCategory: function(e) {
+                e.stopPropagation();
                 var me = this;
                 var category = e.detail;
                 if (category != null) {
@@ -512,10 +521,13 @@
                     this.$.pathwayViewer.$.networkViewer.setVertexDefaultLabelAttribute('label');
 
                     this._updateGeneListVerticesStroke();
+                    this.fire('select-category', e.detail);
                 }
             },
-            handleSelectCircuit: function() {
+            handleSelectCircuit: function(e) {
+                e.stopPropagation();
                 this._hideKoControl();
+                this.fire('select-circuit', e.detail);
             },
             _updateGeneListVerticesStroke: function() {
                 var v, name, names;
@@ -689,22 +701,38 @@
                     };
 
                     var args = this.jobUpdateArgs;
-                    args.options = {
-                        "working_folder": {
-                            out: true,
-                        },
-                        "verbose": {
-                            type: 'flag'
-                        },
-                        "fold_change": {
-                            "type": "text",
-                            "value": this.foldChange.toString()
-                        },
-                        "ko_file": {
-                            "type": "file",
-                            "mode": "text",
-                            "value": ko_file_content
+                    if (args.options != null) {
+                        var outFound = false;
+                        for (var key in args.options) {
+                            var op = args.options[key];
+                            if (op.hasOwnProperty('out')) {
+                                outFound = true;
+                                break;
+                            }
                         }
+                        if (outFound == false) {
+                            args.options['working_folder'] = {
+                                out: true,
+                            };
+                        }
+                    } else {
+                        args.options = {
+                            "working_folder": {
+                                out: true,
+                            }
+                        };
+                    }
+                    args.options['verbose'] = {
+                        type: 'flag'
+                    };
+                    args.options['fold_change'] = {
+                        "type": "text",
+                        "value": this.foldChange.toString()
+                    };
+                    args.options['ko_file'] = {
+                        "type": "file",
+                        "mode": "text",
+                        "value": ko_file_content
                     };
 
                     this.loading = true;
@@ -804,7 +832,8 @@
                 }
             },
             handleNetworkViewerVertexClick: function(e) {
-                var v = this.$.pathwayViewer.$.networkViewer.graph.getVertexById(e.detail.vertexId);
+                e.stopPropagation();
+                var v = e.detail.vertex;
                 this.lastSelectedNode = v.attributes.label;
 
                 if (v.id.indexOf("_func") == -1 && v.attributes.shape != "circle") {
@@ -818,7 +847,7 @@
                         var tid = translatedIds[i];
                         var init_exp = initExpresionValues[i];
                         aux = {
-                            value:  parseFloat(init_exp).toFixed(2),
+                            value: parseFloat(init_exp).toFixed(2),
                             name: tid,
                         }
 
@@ -846,20 +875,25 @@
                     // }
                     // /*****/
 
-                    var nvbcr = this.$.pathwayViewer.$.networkViewer.getBoundingClientRect();
-                    this._showKoControl(e.detail.x + nvbcr.left + 15, e.detail.y + nvbcr.top + 15);
+                    this._showKoControl(e.detail.x, e.detail.y);
                 } else {
                     this._hideKoControl();
                 }
+                this.fire('leftclickvertex', e.detail);
             },
             _showKoControl: function(x, y) {
-                this.$.koControl.style.display = "block";
-                this.$.koControl.style.top = y + 'px';
-                this.$.koControl.style.left = x + 'px';
+                if (this.koInputValues != null && this.koInputValues.length > 0) {
+                    this.$.koControl.style.display = "block";
+                    this.$.koControl.style.top = y + 'px';
+                    this.$.koControl.style.left = x + 'px';
+                } else {
+                    this.$.koControl.style.display = "none";
+                }
             },
 
             _hideKoControl: function() {
                 this.$.koControl.style.display = "none";
+                this.set("koInputValues", []);
             },
 
             /* Help functions */
@@ -901,7 +935,7 @@
                     var line, fields, field, data = [],
                         obj;
 
-                    for (var i = 0; i < lines.length; i++) {
+                    for (var i = 1; i < lines.length; i++) {
                         line = lines[i];
                         if (line.length > 0) {
                             fields = line.split('\t');

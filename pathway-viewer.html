@@ -163,7 +163,7 @@
                     </div>
 
                 </div>
-                <!-- <network-viewer id="networkViewer"></network-viewer> -->
+                <!-- <network-viewer id="networkViewer" disable-context-menu></network-viewer> -->
                 <!-- <network-viewer lite></network-viewer> -->
                 <!-- <network-viewer hide-node-render hide-edge-render></network-viewer> -->
                 <!-- <network-viewer lite hide-node-render hide-edge-render></network-viewer> -->
@@ -171,7 +171,7 @@
             </div>
             <div id="right">
                 <div class="label horizontal layout">
-                    <div> Category:</div>
+                    <div>{{categoryLabel}}:</div>
                     <div class="flex"></div>
                     <span hidden="{{hideAltered}}" style="color:#000">{{countChanged(categories)}}</span>
                     <span hidden="{{hideAltered}}" style="color:#666">&nbsp;altered</span>
@@ -193,7 +193,7 @@
 
 
                 <div class="label horizontal layout">
-                    <label class="stv">Circuit list:</label>
+                    <label class="stv">{{circuitLabel}}:</label>
                     <div class="flex"></div>
                     <span hidden="{{hideAltered}}" style="color:#000">{{countChanged(circuits)}}</span>
                     <span hidden="{{hideAltered}}" style="color:#666">&nbsp;altered</span>
@@ -266,6 +266,14 @@
             _hipathiaLegendImage: {
                 type: String,
                 value: HIPATHIA_LEGEND_IMAGE
+            },
+            categoryLabel: {
+                type: String,
+                value: 'Categories'
+            },
+            circuitLabel: {
+                type: String,
+                value: 'Circuits'
             }
         },
         observers: [
@@ -424,7 +432,6 @@
                 var sif = results[0];
                 var natt = results[1];
                 var eatt = results[2];
-
                 category.paths.sort(me.checkCategorySort('significance', 'desc'));
                 me.set('circuits', category.paths);
                 me.set('leftTitle', category.name + ' (' + category.id + ')');
