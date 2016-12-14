@@ -528,6 +528,19 @@
 
             });
         },
+        selectCategoryById: function(id) {
+            var found;
+            for (var i = 0; i < this.categories.length; i++) {
+                var c = this.categories[i];
+                if (c.id == id) {
+                    found = c;
+                    break;
+                }
+            }
+            if (found != null) {
+                this.selectCategory(c);
+            }
+        },
         selectCircuit: function(circuit) {
             var me = this;
             if (this.selectedCircuit != null && circuit.id === this.selectedCircuit.id) {
