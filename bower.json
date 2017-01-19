@@ -21,8 +21,8 @@
     "tests"
   ],
   "dependencies": {
-    "network-viewer": "https://github.com/babelomics/network-viewer.git#master",
-    "stevia-elements": "https://github.com/babelomics/stevia-elements.git#master"
+    "network-viewer": "https://github.com/frasator/network-viewer.git#master",
+    "stevia-elements": "https://github.com/frasator/stevia-elements.git#master"
   },
   "private": true,
   "devDependencies": {}
