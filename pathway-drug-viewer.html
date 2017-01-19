@@ -139,7 +139,7 @@
             <div id="left" class="vertical layout">
                 <div class="horizontal layout">
                     <div hidden$="{{hideBackButton}}" id="backButton" class="stv-btn stv-btn-shdw button" on-click="handleBackButton">
-                        <i class="fa fa-plus"></i>&nbsp; New &nbsp;
+                        <i class="fa fa-chevron-left"></i>&nbsp; Open &nbsp;
                     </div>
                     <div id="updateGenesButton" class="flex stv-btn stv-btn-shdw button" on-click="handleUpdateButton">
                         <i class="fa fa-refresh"></i>&nbsp; Update
@@ -341,9 +341,11 @@
                 }
             },
             handleBackButton: function() {
+                this.fire('goback');
+            },
+            reset: function() {
                 this.clean();
                 this.set('jobFolder', null);
-                this.fire('goback');
             },
             handleGeneDrugListChanged: function(e) {
                 this._updateGeneListVerticesStroke();
@@ -370,6 +372,43 @@
                 // });
                 this.$.pathwayViewer.$.networkViewer.addEventListener('selectback', function(e) {
                     me._hideKoControl();
+                });
+
+
+                var localActions = localStorage.getItem("pathway-drug-viewer_actions");
+                if (localActions == null) {
+                    this.loadDrugActions();
+                } else {
+                    var actions = JSON.parse(localActions);
+                    var actionsMap = JSON.parse(localStorage.getItem("pathway-drug-viewer_actionsmap"));
+                    this.set('drugActionList', actions);
+                    this.set('drugActionMap', actionsMap);
+                }
+            },
+            loadDrugActions: function() {
+                var me = this;
+                this._openRemoteFile('./conf/drug-actions.json', function(content) {
+                    var allActions = JSON.parse(content);
+                    var nameMap = {};
+                    var actions = [];
+                    var actionsMap = {};
+                    for (var i = 0; i < allActions.length; i++) {
+                        var a = allActions[i];
+                        var n = a.name.toLowerCase();
+                        if (nameMap[n] !== true) {
+                            nameMap[n] = true;
+                            var obj = {
+                                name: a.name,
+                                value: a.value
+                            };
+                            actions.push(obj);
+                            actionsMap[n] = obj;
+                        }
+                    }
+                    me.set('drugActionList', actions);
+                    me.set('drugActionMap', actionsMap);
+                    localStorage.setItem("pathway-drug-viewer_actions", JSON.stringify(actions));
+                    localStorage.setItem("pathway-drug-viewer_actionsmap", JSON.stringify(actionsMap));
                 });
             },
             _init: function() {
