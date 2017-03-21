@@ -274,6 +274,18 @@
             circuitLabel: {
                 type: String,
                 value: 'Circuits'
+            },
+            nodeAttributeMapping: {
+                type: Object,
+                value: function() {
+                    return {}
+                }
+            },
+            edgeAttributeMapping: {
+                type: Object,
+                value: function() {
+                    return {}
+                }
             }
         },
         observers: [
@@ -443,88 +455,50 @@
                 me.$.networkViewer.loadNodeAttributes(natt, true);
                 me.$.networkViewer.loadEdgeAttributes(eatt, true);
 
-                //networkViewer.$.nodeRender.applyDirect('color','color');
-                me.$.networkViewer.$.nodeRender.applyDirect('exp', 'strokeColor');
-                me.$.networkViewer.$.nodeRender.applyDirect('diff.exp', 'color');
-                me.$.networkViewer.$.nodeRender.applyDirect('shape', 'shape');
-                me.$.networkViewer.$.nodeRender.applyDirect('width', 'size');
-                me.$.networkViewer.$.nodeRender.applyDirect('labelSize', 'labelSize');
-                me.$.networkViewer.$.edgeRender.applyDirect('color', 'color');
-                me.$.networkViewer.$.edgeRender.applyDirect('head', 'shape');
-                me.$.networkViewer.setVertexDefaultPositionX('X', true, false);
-                me.$.networkViewer.setVertexDefaultPositionY('Y', true, true);
-                me.$.networkViewer.setVertexDefaultLabelAttribute('label');
-                me.fire('select-category', category);
+                //Node attribute processing
+                var ncolmap = {};
+                for (var i = 0; i < me.$.networkViewer.vertexColumns.length; i++) {
+                    var col = me.$.networkViewer.vertexColumns[i];
+                    ncolmap[col.name] = col;
+                }
 
-                //TODO
-                // var ncolmap = {};
-                // for (var i = 0; i < me.$.networkViewer.vertexColumns.length; i++) {
-                //     var col = me.$.networkViewer.vertexColumns[i];
-                //     ncolmap[col.name] = col;
-                // }
-                //
-                // if (ncolmap['label'] != null) {
-                //     me.$.networkViewer.setVertexDefaultLabelAttribute('label');
-                // }
-                // if (ncolmap['labelSize'] != null) {
-                //     me.$.networkViewer.$.nodeRender.applyDirect('labelSize', 'labelSize');
-                // }
-                // if (ncolmap['opacity'] != null) {
-                //     me.$.networkViewer.$.nodeRender.applyDirect('opacity', 'opacity');
-                // }
-                // if (ncolmap['shape'] != null) {
-                //     me.$.networkViewer.$.nodeRender.applyDirect('shape', 'shape');
-                // }
-                // if (ncolmap['color'] != null) {
-                //     me.$.networkViewer.$.nodeRender.applyDirect('color', 'color');
-                // }
-                // if (ncolmap['strokeColor'] != null) {
-                //     me.$.networkViewer.$.nodeRender.applyDirect('strokeColor', 'strokeColor');
-                // }
-                // if (ncolmap['size'] != null) {
-                //     me.$.networkViewer.$.nodeRender.applyDirect('size', 'size');
-                // }
-                // if (ncolmap['strokeSize'] != null) {
-                //     me.$.networkViewer.$.nodeRender.applyDirect('strokeSize', 'strokeSize');
-                // }
-                // // temporal
-                // me.$.networkViewer.$.nodeRender.applyDirect('exp', 'strokeColor');
-                // me.$.networkViewer.$.nodeRender.applyDirect('diff.exp', 'color');
-                // me.$.networkViewer.$.nodeRender.applyDirect('width', 'size');
-                //
-                // var ecolmap = {};
-                // for (var i = 0; i < me.$.networkViewer.edgeColumns.length; i++) {
-                //     var col = me.$.networkViewer.edgeColumns[i];
-                //     ecolmap[col.name] = col;
-                // }
-                //
-                // if (ecolmap['label'] != null) {
-                //     me.$.networkViewer.setEdgeDefaultLabelAttribute('label');
-                // }
-                // if (ecolmap['labelSize'] != null) {
-                //     me.$.networkViewer.$.edgeRender.applyDirect('labelSize', 'labelSize');
-                // }
-                // if (ecolmap['opacity'] != null) {
-                //     me.$.networkViewer.$.edgeRender.applyDirect('opacity', 'opacity');
-                // }
-                // if (ecolmap['shaft'] != null) {
-                //     me.$.networkViewer.$.edgeRender.applyDirect('shaft', 'shaft');
-                // }
-                // if (ecolmap['shape'] != null) {
-                //     me.$.networkViewer.$.edgeRender.applyDirect('shape', 'shape');
-                // }
-                // if (ecolmap['bidirectional'] != null) {
-                //     me.$.networkViewer.$.edgeRender.applyDirect('bidirectional', 'bidirectional');
-                // }
-                // if (ecolmap['color'] != null) {
-                //     me.$.networkViewer.$.edgeRender.applyDirect('color', 'color');
-                // }
-                // if (ecolmap['size'] != null) {
-                //     me.$.networkViewer.$.edgeRender.applyDirect('size', 'size');
-                // }
-                //
-                // // temporal
-                // me.$.networkViewer.$.edgeRender.applyDirect('head', 'shape');
+                if (me.nodeAttributeMapping['label'] != null) {
+                    me.$.networkViewer.setVertexDefaultLabelAttribute(me.nodeAttributeMapping['label']);
+                } else if (ncolmap['label'] != null) {
+                    me.$.networkViewer.setVertexDefaultLabelAttribute('label');
+                }
+                var nodeDisplayProperties = ['labelSize', 'opacity', 'shape', 'color', 'strokeColor', 'size', 'strokeSize'];
+                for (var i = 0; i < nodeDisplayProperties.length; i++) {
+                    var dp = nodeDisplayProperties[i];
+                    if (me.nodeAttributeMapping[dp] != null) {
+                        me.$.networkViewer.$.nodeRender.applyDirect(me.nodeAttributeMapping[dp], dp);
+                    } else if (ncolmap[dp] != null) {
+                        me.$.networkViewer.$.nodeRender.applyDirect(dp, dp);
+                    }
+                }
+
+                //Edge attribute processing
+                var ecolmap = {};
+                for (var i = 0; i < me.$.networkViewer.edgeColumns.length; i++) {
+                    var col = me.$.networkViewer.edgeColumns[i];
+                    ecolmap[col.name] = col;
+                }
+                if (me.edgeAttributeMapping['label'] != null) {
+                    me.$.networkViewer.setEdgeDefaultLabelAttribute(me.edgeAttributeMapping['label']);
+                } else if (ncolmap['label'] != null) {
+                    me.$.networkViewer.setEdgeDefaultLabelAttribute('label');
+                }
+                var edgeDisplayProperties = ['labelSize', 'opacity', 'shaft', 'shape', 'bidirectional', 'color', 'size'];
+                for (var i = 0; i < edgeDisplayProperties.length; i++) {
+                    var dp = edgeDisplayProperties[i];
+                    if (me.edgeAttributeMapping[dp] != null) {
+                        me.$.networkViewer.$.edgeRender.applyDirect(me.edgeAttributeMapping[dp], dp);
+                    } else if (ncolmap[dp] != null) {
+                        me.$.networkViewer.$.edgeRender.applyDirect(dp, dp);
+                    }
+                }
+
+                me.fire('select-category', category);
 
             });
         },
@@ -549,7 +523,9 @@
                 this.$.networkViewer.$.edgeRender.removeVisualSet('opacity');
             } else {
                 this.set('selectedCircuit', circuit);
+                // Backward compatibility
                 var attrId = circuit.id.split('__').pop();
+                // ------------------------------------------
                 this.$.networkViewer.$.nodeRender.applyVisualSet({
                     attribute: attrId,
                     displayProperty: 'opacity',
