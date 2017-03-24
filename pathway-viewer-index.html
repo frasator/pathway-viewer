@@ -64,7 +64,7 @@
     </head>
 
     <body unresolved class="fullbleed">
-        <pathway-viewer class="container" path="../test/pathwaysnew" path-type="url">
+        <pathway-viewer class="container" path="../test/pathways" path-type="url">
             <div class="right-label ">
                 External box:
             </div>
@@ -74,14 +74,6 @@
         </pathway-viewer>
         <script>
             var pathwayViewer = document.querySelector('pathway-viewer');
-            pathwayViewer.nodeAttributeMapping = {
-                'strokeColor': 'exp',
-                'color': 'diff.exp',
-                'size': 'width'
-            }
-            pathwayViewer.edgeAttributeMapping = {
-                'shape': 'head'
-            }
         </script>
     </body>
 
