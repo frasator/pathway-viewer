@@ -1,29 +1,15 @@
 {
-  "name": "pathway-viewer",
-  "description": "",
-  "repository": {
-    "type": "git",
-    "url": ""
-  },
-  "main": [
-    "pathway-viewer.html"
-  ],
-  "authors": [
-    "Francisco Salavert Torres <frasator@gmail.com>"
-  ],
-  "license": "GPL-3.0",
-  "keywords": [],
-  "ignore": [
-    "**/.*",
-    "node_modules",
-    "bower_components",
-    "test",
-    "tests"
-  ],
-  "dependencies": {
-    "network-viewer": "https://github.com/frasator/network-viewer.git#master",
-    "stevia-elements": "https://github.com/frasator/stevia-elements.git#master"
-  },
-  "private": true,
-  "devDependencies": {}
+    "name": "pathway-viewer",
+    "ignore": [
+        "**/.*",
+        "node_modules",
+        "bower_components",
+        "test",
+        "tests"
+    ],
+    "dependencies": {
+        "network-viewer": "https://github.com/frasator/network-viewer.git#master",
+        "stevia-elements": "https://github.com/frasator/stevia-elements.git#master"
+    },
+    "private": true
 }
