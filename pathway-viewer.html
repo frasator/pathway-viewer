@@ -167,7 +167,7 @@
                 <!-- <network-viewer lite></network-viewer> -->
                 <!-- <network-viewer hide-node-render hide-edge-render></network-viewer> -->
                 <!-- <network-viewer lite hide-node-render hide-edge-render></network-viewer> -->
-                <network-viewer id="networkViewer" hide-bar hide-tool-bar hide-edition-bar hide-status-bar hide-node-render hide-edge-render hide-external disable-context-menu on-hoververtex="handleHoverVertex"></network-viewer>
+                <network-viewer id="networkViewer" hide-bar hide-tool-bar hide-edition-bar hide-status-bar hide-node-render hide-edge-render hide-external disable-context-menu on-hoververtex="handleHoverVertex" on-moveselectedvertices="handleMoveSelectedVertices"></network-viewer>
                 <stv-dropdown id="nodeDropdown" no-min-width>
                     <ul data-menu>
                         <!-- <li on-click="handle">tooltip</li> -->
@@ -646,15 +646,18 @@
         },
 
         handleHoverVertex: function(e) {
-            var v = e.detail.vertex;
-            if (v != this.lastHoverVertex || this.$.nodeDropdown.isMenuHidden()) {
-                this.lastHoverVertex = v;
-                if (v != null && v.attributes.tooltip != null) {
+            this.$.nodeDropdown.hideMenu();
+            this.debounce('showMenu', function() {
+                var v = e.detail.vertex;
+                if (v != null && v.attributes.tooltip != null && v.attributes.tooltip.toString().trim() != "") {
                     var html = v.attributes.tooltip.replace(/\\n/, '<br>');
-                    this.$.tooltip.innerHTML = html;
-                    this.$.nodeDropdown.showMenu(e.detail.e.x, e.detail.e.y);
+                    Polymer.dom(this.$.tooltip).innerHTML = html;
+                    this.$.nodeDropdown.showMenu(e.detail.tipX, e.detail.tipY);
                 }
-            }
+            }, 500)
+        },
+        handleMoveSelectedVertices: function() {
+            this.$.nodeDropdown.hideMenu();
         },
         /* ************** */
         /* ************** */
