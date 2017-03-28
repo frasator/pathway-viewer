@@ -646,15 +646,21 @@
         },
 
         handleHoverVertex: function(e) {
-            this.$.nodeDropdown.hideMenu();
-            this.debounce('showMenu', function() {
-                var v = e.detail.vertex;
-                if (v != null && v.attributes.tooltip != null && v.attributes.tooltip.toString().trim() != "") {
-                    var html = v.attributes.tooltip.replace(/\\n/, '<br>');
-                    Polymer.dom(this.$.tooltip).innerHTML = html;
-                    this.$.nodeDropdown.showMenu(e.detail.tipX, e.detail.tipY);
-                }
-            }, 500)
+            var v = e.detail.vertex;
+            if (this.$.nodeDropdown.isMenuHidden()) {
+                this.lastHoverVertex = null;
+            }
+            if (this.lastHoverVertex != v) {
+                this.$.nodeDropdown.hideMenu();
+                this.lastHoverVertex = v;
+                this.debounce('showMenu', function() {
+                    if (v != null && v.attributes.tooltip != null && v.attributes.tooltip.toString().trim() != "") {
+                        var html = v.attributes.tooltip.replace(/\\n/, '<br>');
+                        Polymer.dom(this.$.tooltip).innerHTML = html;
+                        this.$.nodeDropdown.showMenu(e.detail.tipX, e.detail.tipY);
+                    }
+                }, 600)
+            }
         },
         handleMoveSelectedVertices: function() {
             this.$.nodeDropdown.hideMenu();
