@@ -167,17 +167,7 @@
                 <!-- <network-viewer lite></network-viewer> -->
                 <!-- <network-viewer hide-node-render hide-edge-render></network-viewer> -->
                 <!-- <network-viewer lite hide-node-render hide-edge-render></network-viewer> -->
-                <network-viewer id="networkViewer" hide-bar hide-tool-bar hide-edition-bar hide-status-bar hide-node-render hide-edge-render hide-external disable-context-menu on-hoververtex="handleHoverVertex" on-moveselectedvertices="handleMoveSelectedVertices"></network-viewer>
-                <stv-dropdown id="nodeDropdown" no-min-width>
-                    <ul data-menu>
-                        <!-- <li on-click="handle">tooltip</li> -->
-                        <!-- <li data-divider></li> -->
-                        <!-- <li data-text>Properties</li> -->
-                        <div id="tooltip" data-nohide style="padding:10px;">
-                            <!-- todo -->
-                        </div>
-                    </ul>
-                </stv-dropdown>
+                <network-viewer id="networkViewer" hide-bar hide-tool-bar hide-edition-bar hide-status-bar hide-node-render hide-edge-render hide-external disable-context-menu></network-viewer>
             </div>
             <div id="right">
                 <div class="label horizontal layout">
@@ -296,9 +286,6 @@
                 value: function() {
                     return {}
                 }
-            },
-            lastHoverVertex: {
-                type: Object,
             }
         },
         observers: [
@@ -643,27 +630,6 @@
                 icon.classList.add('fa-sort-amount-asc');
                 this.set('categorySortOrder', 'asc');
             }
-        },
-
-        handleHoverVertex: function(e) {
-            var v = e.detail.vertex;
-            if (this.$.nodeDropdown.isMenuHidden()) {
-                this.lastHoverVertex = null;
-            }
-            if (this.lastHoverVertex != v) {
-                this.$.nodeDropdown.hideMenu();
-                this.lastHoverVertex = v;
-                this.debounce('showMenu', function() {
-                    if (v != null && v.attributes.tooltip != null && v.attributes.tooltip.toString().trim() != "") {
-                        var html = v.attributes.tooltip.replace(/\\n/, '<br>');
-                        Polymer.dom(this.$.tooltip).innerHTML = html;
-                        this.$.nodeDropdown.showMenu(e.detail.tipX, e.detail.tipY);
-                    }
-                }, 600)
-            }
-        },
-        handleMoveSelectedVertices: function() {
-            this.$.nodeDropdown.hideMenu();
         },
         /* ************** */
         /* ************** */
