@@ -470,7 +470,7 @@
                 var nodeDisplayProperties = ['labelSize', 'opacity', 'shape', 'color', 'strokeColor', 'size', 'strokeSize'];
                 for (var i = 0; i < nodeDisplayProperties.length; i++) {
                     var dp = nodeDisplayProperties[i];
-                    if (me.nodeAttributeMapping[dp] != null) {
+                    if (me.nodeAttributeMapping[dp] != null && ncolmap[dp] != null) {
                         me.$.networkViewer.$.nodeRender.applyDirect(me.nodeAttributeMapping[dp], dp);
                     } else if (ncolmap[dp] != null) {
                         me.$.networkViewer.$.nodeRender.applyDirect(dp, dp);
@@ -491,9 +491,9 @@
                 var edgeDisplayProperties = ['labelSize', 'opacity', 'shaft', 'shape', 'bidirectional', 'color', 'size'];
                 for (var i = 0; i < edgeDisplayProperties.length; i++) {
                     var dp = edgeDisplayProperties[i];
-                    if (me.edgeAttributeMapping[dp] != null) {
+                    if (me.edgeAttributeMapping[dp] != null && ecolmap[dp] != null) {
                         me.$.networkViewer.$.edgeRender.applyDirect(me.edgeAttributeMapping[dp], dp);
-                    } else if (ncolmap[dp] != null) {
+                    } else if (ecolmap[dp] != null) {
                         me.$.networkViewer.$.edgeRender.applyDirect(dp, dp);
                     }
                 }
